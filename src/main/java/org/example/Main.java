@@ -1,11 +1,11 @@
 package org.example;
 import java.io.BufferedReader;
-import  java.io.InputStreamReader;
+import java.io.InputStreamReader;
 import java.io.IOException;
 
 public class Main {
 
-    public enum MetaCommandResult{
+    public enum MetaCommandResult {
         META_COMMAND_SUCCESS,
         META_COMMAND_UNRECOGNIZED_COMMAND
     }
@@ -15,21 +15,21 @@ public class Main {
         PREPARE_UNRECOGNIZED_STATEMENT
     }
 
-
     public enum StatementType {
         STATEMENT_INSERT,
         STATEMENT_SELECT
     }
 
-
-    public class Statement {
+    public static class Statement {
         public StatementType type;
     }
 
-    public static PrepareResult PrepareStatement(String inputBuffer, String statement) {
-        if (inputBuffer.equals("insert")) {
+    public static PrepareResult PrepareStatement(String inputBuffer, Statement statement) {
+        if (inputBuffer.startsWith("insert")) {
+            statement.type = StatementType.STATEMENT_INSERT;
             return PrepareResult.PREPARE_SUCCESS;
         } else if (inputBuffer.equals("select")) {
+            statement.type = StatementType.STATEMENT_SELECT;
             return PrepareResult.PREPARE_SUCCESS;
         }
         return PrepareResult.PREPARE_UNRECOGNIZED_STATEMENT;
@@ -38,17 +38,16 @@ public class Main {
     public static void executeStatement(Statement statement) {
         switch (statement.type) {
             case STATEMENT_INSERT:
-                System.out.printf("This is where we would do an insert.\n");
+                System.out.println("This is where we would do an insert.");
                 break;
             case STATEMENT_SELECT:
-                System.out.printf("This is where we would do a select.\n");
+                System.out.println("This is where we would do a select.");
                 break;
-
         }
     }
 
     public static void printPrompt() {
-        System.out.printf("wooper_db > ");
+        System.out.print("wooper_db > ");
     }
 
     public static MetaCommandResult doMetaCommand(String inputBuffer) {
@@ -63,17 +62,30 @@ public class Main {
             while (true) {
                 printPrompt();
                 String inp = reader.readLine();
-                if (inp.charAt(0) == '.') {
-                     switch (doMetaCommand(inp)) {
-                         case MetaCommandResult.META_COMMAND_SUCCESS:
-                             continue;
-                         case MetaCommandResult.META_COMMAND_UNRECOGNIZED_COMMAND:
-                             System.out.printf("Unrecognized command '%s'", inp);
-                             continue;
-                     }
+                if (inp == null) break; // handle EOF
+                if (inp.isEmpty()) continue;
 
+                if (inp.charAt(0) == '.') {
+                    switch (doMetaCommand(inp)) {
+                        case META_COMMAND_SUCCESS:
+                            continue;
+                        case META_COMMAND_UNRECOGNIZED_COMMAND:
+                            System.out.printf("Unrecognized command '%s'\n", inp);
+                            continue;
+                    }
                 }
 
+                Statement statement = new Statement();
+                switch (PrepareStatement(inp, statement)) {
+                    case PREPARE_SUCCESS:
+                        break;
+                    case PREPARE_UNRECOGNIZED_STATEMENT:
+                        System.out.printf("Unrecognized keyword at start of '%s'\n", inp);
+                        continue;
+                }
+
+                executeStatement(statement);
+                System.out.println("Executed");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
