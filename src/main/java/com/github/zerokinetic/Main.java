@@ -1,23 +1,45 @@
 package com.github.zerokinetic;
-
 import java.util.Scanner;
 
 public class Main {
 
     public static void printPrompt() {
-        System.out.printf("wooper_db> ");
+        System.out.print("wooper_db> ");
     }
-    public static void main(String[] args) {
-        StringBuffer sb = new StringBuffer();
 
+    private static class InputBuffer {
+        StringBuffer buffer;
+    }
+
+    static InputBuffer newInputBuffer() {
+        InputBuffer inputBuffer = new InputBuffer();
+        inputBuffer.buffer = new StringBuffer();
+        return inputBuffer;
+    }
+
+    static void readInputBuffer(InputBuffer inputBuffer, Scanner scanner) {
+        inputBuffer.buffer.append(scanner.nextLine());
+
+//        System.out.println(inputBuffer.buffer.toString());
+//        System.out.println(inputBuffer.bufferLength);
+//        System.out.println(inputBuffer.inputLength);
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
         while (true) {
             printPrompt();
-            if(sb.equals(".exit")) {
-                System.exit(1);
+            InputBuffer inputBuffer = newInputBuffer();
+            readInputBuffer(inputBuffer, scanner);
+
+
+            if(inputBuffer.buffer.toString().trim().equals(".exit")) {
+                System.out.println("Exiting...");
+                break;
             } else {
-                System.out.printf("Unrecognized command '%s'.\n", sb);
-                System.exit(0);
+                System.out.printf("Unrecognized command '%s'.\n", inputBuffer.buffer.toString());
             }
         }
+        scanner.close();
     }
 }
