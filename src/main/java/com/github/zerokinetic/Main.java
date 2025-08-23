@@ -33,13 +33,26 @@ public class Main {
         return MetaCommandResult.META_COMMAND_UNRECOGNIZED_COMMAND;
     }
 
+    public static class RowToInsert {
+        int id;
+        String username;
+        String email;
+    }
+
     public static class Statement {
         StatementType statementType;
+        RowToInsert rowToInsert;
     }
 
     static PrepareResult prepareStatement(InputBuffer inputBuffer, Statement statement) {
         if (inputBuffer.buffer.toString().equals("insert")) {
             statement.statementType = StatementType.STATEMENT_INSERT;
+            String[] args = inputBuffer.buffer.toString().split(" ");
+            statement.rowToInsert.id = Integer.parseInt(args[1]);
+            statement.rowToInsert.username = args[2];
+            statement.rowToInsert.email = args[3];
+
+
             return PrepareResult.PREPARE_SUCCESS;
         } else if(inputBuffer.buffer.toString().equals("select")) {
             statement.statementType = StatementType.STATEMENT_SELECT;
